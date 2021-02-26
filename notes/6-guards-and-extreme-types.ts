@@ -6,72 +6,78 @@ import { HasEmail } from "./1-basics";
  * (1) "Top types" are types that can hold any value. Typescript has two of them
  */
 
-// let myAny: any = 32;
-// let myUnknown: unknown = "hello, unknown";
+let myAny: any = 32;
+let myUnknown: unknown = "hello, unknown";
 
 // Note that we can do whatever we want with an any, but nothing with an unknown
 
-// myAny.foo.bar.baz;
-// myUnknown.foo;
+myAny.foo.bar.baz;
+myUnknown.foo; // ERROR!!
 
 /**
  * (2) When to use `any`
  * Anys are good for areas of our programs where we want maximum flexibility
  * Example: sometimes a Promise<any> is fine when we don't care at all about the resolved value
  */
-// async function logWhenResolved(p: Promise<any>) {
-//   const val = await p;
-//   console.log("Resolved to: ", val);
-// }
+async function logWhenResolved(p: Promise<any>) {
+  const val = await p;
+  console.log("Resolved to: ", val);
+}
 
 /**
  * (3) When to use `unknown`
  * Unknowns are good for "private" values that we don't want to expose through a public API.
  * They can still hold any value, we just must narrow the type before we're able to use it.
  *
- * We'll do htis with a type guard.
+ * We'll do this with a type guard.
  */
 
-// myUnknown.split(", "); // 🚨 ERROR
+myUnknown.split(", "); // 🚨 ERROR
 
 /**
  * (4) Built-in type guards
  */
-// if (typeof myUnknown === "string") {
-//   // in here, myUnknown is of type string
-//   myUnknown.split(", "); // ✅ OK
-// }
-// if (myUnknown instanceof Promise) {
-//   // in here, myUnknown is of type Promise<any>
-//   myUnknown.then(x => console.log(x));
-// }
+if (typeof myUnknown === "string") {
+  // in here, myUnknown is of type string
+  myUnknown.split(", "); // ✅ OK
+}
+if (myUnknown instanceof Promise) {
+  // in here, myUnknown is of type Promise<any>
+  myUnknown.then(x => console.log(x));
+}
 
 /**
  * (5) User-defined type guards
  * We can also create our own type guards, using functions that return booleans
  */
 
-// // 💡 Note return type
-// function isHasEmail(x: any): x is HasEmail {
-//   return typeof x.name === "string" && typeof x.email === "string";
-// }
+// 💡 Note return type
+function isHasEmail(x: any): x is HasEmail {
+  return typeof x.name === "string" && typeof x.email === "string";
+}
 
-// if (isHasEmail(myUnknown)) {
-//   // In here, myUnknown is of type HasEmail
-//   console.log(myUnknown.name, myUnknown.email);
-// }
+if (isHasEmail(myUnknown)) {
+  // In here, myUnknown is of type HasEmail
+  console.log(myUnknown.name, myUnknown.email);
+}
 
-// // my most common guard
-// function isDefined<T>(arg: T | undefined): arg is T {
-//   return typeof arg !== "undefined";
-// }
+// my most common guard
+function isDefined<T>(arg: T | undefined): arg is T {
+  return typeof arg !== "undefined";
+}
 
-// // NEW TS 3.7: assertion-based type guards!
-// function assertIsStringArray(arr: any[]): asserts arr is string[] {
-//   if (!arr) throw new Error('not an array!');
-//   const strings = arr.filter(i => typeof i === 'string');
-//   if (strings.length !== arr.length) throw new Error('not an array of strings');
-// }
+// * list: (string | undefined)[]
+const list = ['a', 'b', 'c', undefined, 'd']
+
+// * filtered: string[]
+const filtered = list.filter(isDefined); // worlks well means undefined is chopped off
+
+// NEW TS 3.7: assertion-based type guards!
+function assertIsStringArray(arr: any[]): asserts arr is string[] {
+  if (!arr) throw new Error('not an array!');
+  const strings = arr.filter(i => typeof i === 'string');
+  if (strings.length !== arr.length) throw new Error('not an array of strings');
+}
 
 // const arr: (string|number)[] = ['3', 12, '21'];
 // assertIsStringArray(arr);
